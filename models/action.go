@@ -3,10 +3,10 @@ package models
 import "time"
 
 type Action struct {
-	Id        int       `json:"id"`
-	Name      string    `json:"name"`
-	VideoId   string    `json:"video_id"`
-	CreatedAt time.Time `json:"created_at"`
+	Id               int       `json:"id"`
+	VideoURL         string    `json:"video_url"`
+	PredictedActions []string  `json:"predicted_actions"`
+	CreatedAt        time.Time `json:"created_at"`
 }
 
 var ActionMapping = map[string]string{

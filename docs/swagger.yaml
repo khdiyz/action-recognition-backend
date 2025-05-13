@@ -1,4 +1,11 @@
 definitions:
+  handler.getActionsResponse:
+    properties:
+      actions:
+        items:
+          $ref: '#/definitions/models.Action'
+        type: array
+    type: object
   handler.predictActionRequest:
     description: Request containing the URL of the video to analyze
     properties:
@@ -17,6 +24,17 @@ definitions:
           type: string
         type: array
     type: object
+  models.Action:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      video_id:
+        type: string
+    type: object
   response.BaseResponse:
     properties:
       message:
@@ -29,6 +47,39 @@ info:
   title: ActionDetector API
   version: "1.0"
 paths:
+  /api/actions:
+    delete:
+      description: Delete all previously predicted actions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully deleted all actions
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      summary: Delete all actions
+      tags:
+      - actions
+    get:
+      description: Get a list of all previously predicted actions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns the list of actions
+          schema:
+            $ref: '#/definitions/handler.getActionsResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      summary: Get all actions
+      tags:
+      - actions
   /api/files:
     post:
       consumes:

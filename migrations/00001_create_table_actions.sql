@@ -2,8 +2,8 @@
 -- +goose StatementBegin
 CREATE TABLE actions (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    video_id varchar(64) NOT NULL,
+    video_url VARCHAR(255) NOT NULL,
+    predicted_actions varchar[],
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

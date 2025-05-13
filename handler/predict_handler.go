@@ -4,6 +4,7 @@ import (
 	"action-detector-backend/models"
 	"action-detector-backend/pkg/response"
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -40,19 +41,40 @@ func (h *Handler) predictAction(c *gin.Context) {
 
 	err := c.ShouldBindJSON(&body)
 	if err != nil {
-		response.ErrorResponse(c, 400, err)
+		fmt.Println("Error binding JSON:", err)
+		response.ErrorResponse(c, http.StatusBadRequest, err)
 		return
 	}
 
+	// Check if video URL is empty
+	if body.VideoURL == "" {
+		err := fmt.Errorf("video_url is required")
+		fmt.Println(err)
+		response.ErrorResponse(c, http.StatusBadRequest, err)
+		return
+	}
+
+	fmt.Println("Received request with video URL:", body.VideoURL)
+
 	predictions, err := h.sendRequestPredict(body.VideoURL)
 	if err != nil {
+		fmt.Println("Error sending predict request:", err)
 		response.ErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	}
 
 	result := getActionsUzb(predictions)
 
-	fmt.Println(result)
+	go func() {
+		h.usecase.Action.CreateAction(context.Background(), models.Action{
+			VideoURL:         body.VideoURL,
+			PredictedActions: predictions,
+		})
+	}()
+
+	// Set response headers
+	c.Header("Content-Type", "application/json")
+	c.Header("Access-Control-Allow-Origin", "*")
 
 	// Return success response
 	c.JSON(http.StatusOK, pretictActionResponse{

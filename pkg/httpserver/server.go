@@ -16,8 +16,9 @@ func (s *Server) Run(host string, port int, handler http.Handler) error {
 		Addr:           ":" + strconv.Itoa(port),
 		Handler:        handler,
 		MaxHeaderBytes: 1 << 20, // 1 MB
-		ReadTimeout:    20 * time.Second,
-		WriteTimeout:   10 * time.Second,
+		ReadTimeout:    60 * time.Second,
+		WriteTimeout:   60 * time.Second,
+		IdleTimeout:    120 * time.Second,
 	}
 
 	return s.httpServer.ListenAndServe()

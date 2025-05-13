@@ -8,6 +8,56 @@
     },
     "host": "localhost:4040",
     "paths": {
+        "/api/actions": {
+            "get": {
+                "description": "Get a list of all previously predicted actions",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "actions"
+                ],
+                "summary": "Get all actions",
+                "responses": {
+                    "200": {
+                        "description": "Returns the list of actions",
+                        "schema": {
+                            "$ref": "#/definitions/handler.getActionsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete all previously predicted actions",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "actions"
+                ],
+                "summary": "Delete all actions",
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted all actions",
+                        "schema": {
+                            "$ref": "#/definitions/response.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/files": {
             "post": {
                 "description": "Upload a video file with size limit of 50MB",
@@ -100,6 +150,17 @@
         }
     },
     "definitions": {
+        "handler.getActionsResponse": {
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Action"
+                    }
+                }
+            }
+        },
         "handler.predictActionRequest": {
             "description": "Request containing the URL of the video to analyze",
             "type": "object",
@@ -123,6 +184,23 @@
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "models.Action": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "video_id": {
+                    "type": "string"
                 }
             }
         },

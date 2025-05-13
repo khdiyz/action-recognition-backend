@@ -44,6 +44,8 @@ func (h *Handler) InitRoutes(cfg *config.Config) *gin.Engine {
 
 	api.POST("/files", h.uploadVideoFile)
 	api.POST("/predict", h.predictAction)
+	api.GET("/actions", h.getActions)
+	api.DELETE("/actions", h.deleteActions)
 
 	return router
 }

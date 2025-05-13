@@ -7,6 +7,9 @@ func corsMiddleware() gin.HandlerFunc {
 		origin := ctx.Request.Header.Get("Origin")
 		if origin != "" {
 			ctx.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+		} else {
+			// Allow all origins by default
+			ctx.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		}
 		ctx.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		ctx.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With, Access-Control-Request-Method, Access-Control-Request-Headers")
@@ -22,4 +25,3 @@ func corsMiddleware() gin.HandlerFunc {
 		ctx.Next()
 	}
 }
-

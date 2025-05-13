@@ -22,10 +22,10 @@ func newActionRepo(db *postgres.Postgres, logger *logger.Logger) *actionRepo {
 func (r *actionRepo) CreateAction(ctx context.Context, action models.Action) error {
 	query := `
 	insert into actions (
-		name, video_id
-	) values ($1);`
+		video_url, predicted_actions
+	) values ($1, $2);`
 
-	_, err := r.db.Pool.Exec(ctx, query, action.Name)
+	_, err := r.db.Pool.Exec(ctx, query, action.VideoURL, action.PredictedActions)
 	if err != nil {
 		r.logger.Error(err)
 		return err
@@ -38,7 +38,7 @@ func (r *actionRepo) GetActions(ctx context.Context) ([]models.Action, error) {
 	actions := []models.Action{}
 
 	query := `
-	select id, name, created_at
+	select id, predicted_actions, video_url, created_at
 	from actions`
 
 	rows, err := r.db.Pool.Query(ctx, query)
@@ -53,7 +53,8 @@ func (r *actionRepo) GetActions(ctx context.Context) ([]models.Action, error) {
 
 		if err = rows.Scan(
 			&action.Id,
-			&action.Name,
+			&action.PredictedActions,
+			&action.VideoURL,
 			&action.CreatedAt,
 		); err != nil {
 			r.logger.Error(err)
