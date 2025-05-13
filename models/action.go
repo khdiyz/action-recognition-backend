@@ -9,6 +9,11 @@ type Action struct {
 	CreatedAt        time.Time `json:"created_at"`
 }
 
+type Prediction struct {
+	Label      string `json:"label"`
+	Confidence string `json:"confidence"`
+}
+
 var ActionMapping = map[string]string{
 	// English to Uzbek mapping for Kinetics-400 action classes
 	"abseiling":                           "arqon bilan tushish",

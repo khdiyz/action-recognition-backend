@@ -16,7 +16,7 @@ import (
 // @Description Response containing predicted actions in Uzbek language
 type pretictActionResponse struct {
 	// @Description List of predicted actions in Uzbek language
-	Predictions []string `json:"predictions"`
+	Predictions []models.Prediction `json:"predictions"`
 }
 
 // predictActionRequest represents the request body for predicting actions
@@ -63,12 +63,17 @@ func (h *Handler) predictAction(c *gin.Context) {
 		return
 	}
 
-	result := getActionsUzb(predictions)
+	labels := []string{}
+
+	for i := range predictions {
+		predictions[i].Label = models.ActionMapping[predictions[i].Label]
+		labels = append(labels, predictions[i].Label)
+	}
 
 	go func() {
 		h.usecase.Action.CreateAction(context.Background(), models.Action{
 			VideoURL:         body.VideoURL,
-			PredictedActions: predictions,
+			PredictedActions: labels,
 		})
 	}()
 
@@ -78,7 +83,7 @@ func (h *Handler) predictAction(c *gin.Context) {
 
 	// Return success response
 	c.JSON(http.StatusOK, pretictActionResponse{
-		Predictions: result,
+		Predictions: predictions,
 	})
 }
 
@@ -93,7 +98,7 @@ func getActionsUzb(actions []string) []string {
 	return result
 }
 
-func (h *Handler) sendRequestPredict(link string) ([]string, error) {
+func (h *Handler) sendRequestPredict(link string) ([]models.Prediction, error) {
 	// Create request body
 	requestBody := map[string]string{
 		"video_url": link,
@@ -131,7 +136,7 @@ func (h *Handler) sendRequestPredict(link string) ([]string, error) {
 
 	// Parse response
 	var response struct {
-		Predictions []string `json:"predictions"`
+		Predictions []models.Prediction `json:"predictions"`
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {

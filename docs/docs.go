@@ -189,7 +189,7 @@ const docTemplate = `{
                     "description": "@Description List of predicted actions in Uzbek language",
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/models.Prediction"
                     }
                 }
             }
@@ -203,10 +203,24 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "name": {
+                "predicted_actions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "video_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Prediction": {
+            "type": "object",
+            "properties": {
+                "confidence": {
                     "type": "string"
                 },
-                "video_id": {
+                "label": {
                     "type": "string"
                 }
             }

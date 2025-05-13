@@ -21,7 +21,7 @@ definitions:
       predictions:
         description: '@Description List of predicted actions in Uzbek language'
         items:
-          type: string
+          $ref: '#/definitions/models.Prediction'
         type: array
     type: object
   models.Action:
@@ -30,9 +30,18 @@ definitions:
         type: string
       id:
         type: integer
-      name:
+      predicted_actions:
+        items:
+          type: string
+        type: array
+      video_url:
         type: string
-      video_id:
+    type: object
+  models.Prediction:
+    properties:
+      confidence:
+        type: string
+      label:
         type: string
     type: object
   response.BaseResponse:
