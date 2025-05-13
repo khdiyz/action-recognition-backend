@@ -1,0 +1,96 @@
+definitions:
+  handler.predictActionRequest:
+    description: Request containing the URL of the video to analyze
+    properties:
+      video_url:
+        description: '@Description URL of the video to analyze'
+        type: string
+    required:
+    - video_url
+    type: object
+  handler.pretictActionResponse:
+    description: Response containing predicted actions in Uzbek language
+    properties:
+      predictions:
+        description: '@Description List of predicted actions in Uzbek language'
+        items:
+          type: string
+        type: array
+    type: object
+  response.BaseResponse:
+    properties:
+      message:
+        type: string
+    type: object
+host: localhost:4040
+info:
+  contact: {}
+  description: API Server for Application
+  title: ActionDetector API
+  version: "1.0"
+paths:
+  /api/files:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a video file with size limit of 50MB
+      parameters:
+      - description: Video file to upload (max 50MB)
+        in: formData
+        name: video
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns the file link
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "400":
+          description: Invalid file size or type
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      summary: Upload a video file
+      tags:
+      - video
+  /api/predict:
+    post:
+      consumes:
+      - application/json
+      description: Upload a video URL and get predicted actions in Uzbek language
+      parameters:
+      - description: Request body with video URL
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.predictActionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns predicted actions in Uzbek
+          schema:
+            $ref: '#/definitions/handler.pretictActionResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "500":
+          description: Internal server error or prediction service error
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      summary: Predict actions from video
+      tags:
+      - prediction
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
