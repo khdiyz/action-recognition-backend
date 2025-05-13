@@ -36,7 +36,7 @@ func (s *fileUsecase) UploadFile(ctx context.Context, file io.Reader, fileSize i
 		return "", response.ServiceError(err, codes.Internal)
 	}
 
-	fileLink := "https://" + s.cfg.MinioEndpoint + "/" + s.cfg.MinioBucketName + "/" + objectName
+	fileLink := s.cfg.MinioFileUrl + "/" + s.cfg.MinioBucketName + "/" + objectName
 
 	// Return the object name (file ID)
 	return fileLink, nil
