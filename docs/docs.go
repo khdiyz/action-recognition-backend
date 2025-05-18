@@ -175,6 +175,9 @@ const docTemplate = `{
                 "video_url"
             ],
             "properties": {
+                "predict_api_url": {
+                    "type": "string"
+                },
                 "video_url": {
                     "description": "@Description URL of the video to analyze",
                     "type": "string"
@@ -185,6 +188,9 @@ const docTemplate = `{
             "description": "Response containing predicted actions in Uzbek language",
             "type": "object",
             "properties": {
+                "output_video_url": {
+                    "type": "string"
+                },
                 "predictions": {
                     "description": "@Description List of predicted actions in Uzbek language",
                     "type": "array",

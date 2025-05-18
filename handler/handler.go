@@ -51,10 +51,25 @@ func (h *Handler) InitRoutes(cfg *config.Config) *gin.Engine {
 }
 
 func (h *Handler) setupSwagger(router *gin.Engine) {
-	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler), func(ctx *gin.Context) {
+	router.GET("/docs/*any", func(ctx *gin.Context) {
+		// Set CORS headers for Swagger UI
+		ctx.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		ctx.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		ctx.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		ctx.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+
+		// Update Swagger info
 		docs.SwaggerInfo.Host = ctx.Request.Host
 		if ctx.Request.TLS != nil {
 			docs.SwaggerInfo.Schemes = []string{"https"}
 		}
+
+		// Handle OPTIONS request
+		if ctx.Request.Method == "OPTIONS" {
+			ctx.AbortWithStatus(204)
+			return
+		}
+
+		ginSwagger.WrapHandler(swaggerFiles.Handler)(ctx)
 	})
 }

@@ -9,6 +9,8 @@ definitions:
   handler.predictActionRequest:
     description: Request containing the URL of the video to analyze
     properties:
+      predict_api_url:
+        type: string
       video_url:
         description: '@Description URL of the video to analyze'
         type: string
@@ -18,6 +20,8 @@ definitions:
   handler.pretictActionResponse:
     description: Response containing predicted actions in Uzbek language
     properties:
+      output_video_url:
+        type: string
       predictions:
         description: '@Description List of predicted actions in Uzbek language'
         items:

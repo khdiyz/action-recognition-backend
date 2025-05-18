@@ -17,13 +17,15 @@ import (
 type pretictActionResponse struct {
 	// @Description List of predicted actions in Uzbek language
 	Predictions []models.Prediction `json:"predictions"`
+	VideoURL    string              `json:"output_video_url"`
 }
 
 // predictActionRequest represents the request body for predicting actions
 // @Description Request containing the URL of the video to analyze
 type predictActionRequest struct {
 	// @Description URL of the video to analyze
-	VideoURL string `json:"video_url" binding:"required"`
+	VideoURL      string `json:"video_url" binding:"required"`
+	PredictApiURL string `json:"predict_api_url"`
 }
 
 // @Summary Predict actions from video
@@ -46,17 +48,7 @@ func (h *Handler) predictAction(c *gin.Context) {
 		return
 	}
 
-	// Check if video URL is empty
-	if body.VideoURL == "" {
-		err := fmt.Errorf("video_url is required")
-		fmt.Println(err)
-		response.ErrorResponse(c, http.StatusBadRequest, err)
-		return
-	}
-
-	fmt.Println("Received request with video URL:", body.VideoURL)
-
-	predictions, err := h.sendRequestPredict(body.VideoURL)
+	resp, err := h.sendRequestPredict(body.VideoURL, body.PredictApiURL)
 	if err != nil {
 		fmt.Println("Error sending predict request:", err)
 		response.ErrorResponse(c, http.StatusInternalServerError, err)
@@ -64,6 +56,12 @@ func (h *Handler) predictAction(c *gin.Context) {
 	}
 
 	labels := []string{}
+
+	predictions := resp.Predictions
+	if len(predictions) == 0 {
+		response.ErrorResponse(c, http.StatusInternalServerError, fmt.Errorf("no predictions found"))
+		return
+	}
 
 	for i := range predictions {
 		predictions[i].Label = models.ActionMapping[predictions[i].Label]
@@ -84,24 +82,32 @@ func (h *Handler) predictAction(c *gin.Context) {
 	// Return success response
 	c.JSON(http.StatusOK, pretictActionResponse{
 		Predictions: predictions,
+		VideoURL:    resp.TrackedVideoUploadURL,
 	})
 }
 
-func getActionsUzb(actions []string) []string {
-	actionsMapping := models.ActionMapping
-	result := []string{}
+// func getActionsUzb(actions []string) []string {
+// 	actionsMapping := models.ActionMapping
+// 	result := []string{}
 
-	for i := range actions {
-		result = append(result, actionsMapping[actions[i]])
-	}
+// 	for i := range actions {
+// 		result = append(result, actionsMapping[actions[i]])
+// 	}
 
-	return result
+// 	return result
+// }
+
+type PredictResponse struct {
+	Predictions              []models.Prediction `json:"action_predictions"`
+	TrackedVideoUploadStatus string              `json:"tracked_video_upload_status"`
+	TrackedVideoUploadURL    string              `json:"uploaded_tracked_video_url"`
 }
 
-func (h *Handler) sendRequestPredict(link string) ([]models.Prediction, error) {
+func (h *Handler) sendRequestPredict(link string, predictApiURL string) (PredictResponse, error) {
 	// Create request body
 	requestBody := map[string]string{
-		"video_url": link,
+		"video_url":  link,
+		"upload_url": "https://api.multicom.uz/api/v1/files",
 	}
 
 	// Create HTTP client
@@ -110,13 +116,13 @@ func (h *Handler) sendRequestPredict(link string) ([]models.Prediction, error) {
 	// Marshal the request body to JSON
 	jsonBody, err := json.Marshal(requestBody)
 	if err != nil {
-		return nil, err
+		return PredictResponse{}, err
 	}
 
 	// Create the request
-	req, err := http.NewRequest("POST", h.cfg.PredictApiURL+"/predict", bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequest("POST", predictApiURL+"/predict", bytes.NewBuffer(jsonBody))
 	if err != nil {
-		return nil, err
+		return PredictResponse{}, err
 	}
 
 	// Set headers
@@ -125,23 +131,21 @@ func (h *Handler) sendRequestPredict(link string) ([]models.Prediction, error) {
 	// Send the request
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return PredictResponse{}, err
 	}
 	defer resp.Body.Close()
 
 	// Check response status
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("prediction API returned status code: %d", resp.StatusCode)
+		return PredictResponse{}, fmt.Errorf("prediction API returned status code: %d", resp.StatusCode)
 	}
 
 	// Parse response
-	var response struct {
-		Predictions []models.Prediction `json:"predictions"`
-	}
+	var response PredictResponse
 
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return nil, err
+		return PredictResponse{}, err
 	}
 
-	return response.Predictions, nil
+	return response, nil
 }
